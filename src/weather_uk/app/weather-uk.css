@@ -1,0 +1,22 @@
+Screen {
+    align: center middle;
+}
+
+Welcome {
+    background: $boost;
+    height: auto;
+    max-width: 100;
+    min-width: 40;
+    border: wide $primary;
+    padding: 1 2;
+    margin: 1 2;
+    box-sizing: border-box;
+}
+
+Welcome > Label {
+    margin: 0 4 1 4;
+}
+
+Welcome > Input {
+    margin: 0 4 1 4;
+}
