@@ -2,7 +2,7 @@ Screen {
     align: center middle;
 }
 
-Welcome {
+Container {
     background: $boost;
     height: auto;
     max-width: 100;
@@ -13,10 +13,15 @@ Welcome {
     box-sizing: border-box;
 }
 
-Welcome > Label {
+Label {
+    margin: 0 4 1 4;
+    text-style: bold;
+}
+
+Input {
     margin: 0 4 1 4;
 }
 
-Welcome > Input {
-    margin: 0 4 1 4;
+Dropdown {
+    width: 60%;
 }
