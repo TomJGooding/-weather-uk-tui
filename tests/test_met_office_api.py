@@ -20,6 +20,9 @@ class FakeMetOfficeApi(AbstractWeatherApi):
         filename: str = resource
         return (FAKE_DATA_DIR / filename).read_text()
 
+    def check_authentication(self) -> None:
+        pass
+
     def get_locations_list(self) -> list[Location]:
         resource: str = "sitelist"
         resp: str = self._fake_request(resource)
