@@ -1,4 +1,5 @@
 import json
+from typing import Optional
 
 import requests
 
@@ -10,9 +11,14 @@ class MetOfficeApi(AbstractWeatherApi):
     BASE_URL: str = "http://datapoint.metoffice.gov.uk/public/data/"
     DATATYPE: str = "json"
 
-    def __init__(self, api_key: str) -> None:
-        self.api_key: str = api_key
+    def __init__(self, api_key: Optional[str] = None) -> None:
+        self.api_key: str | None = api_key
         self._session: requests.Session = requests.Session()
+
+    def check_authentication(self) -> None:
+        # Try a small request (0.1kB) - if no exceptions then all is well!
+        resource: str = "txt/wxfcs/regionalforecast/json/capabilities"
+        self._request(resource)
 
     def get_locations_list(self) -> list[Location]:
         resource: str = f"val/wxfcs/all/{self.DATATYPE}/sitelist"

@@ -5,7 +5,6 @@ from textual.screen import Screen
 from textual.widgets import Footer, Input, Markdown
 from textual_autocomplete import AutoComplete, Dropdown, DropdownItem
 
-from weather_uk.adapters.weather_api import MetOfficeApi
 from weather_uk.locations import services
 
 
@@ -24,10 +23,12 @@ class LocationsScreen(Screen):
         yield Footer()
 
     def get_location_items(self) -> list[DropdownItem]:
-        api_key = self.app._api_key  # type: ignore[attr-defined]
+        weather_api = self.app._weather_api  # type: ignore[attr-defined]
         locations_data = []
         try:
-            locations_data = services.get_locations_list(MetOfficeApi(api_key))
+            locations_data = services.get_locations_list(weather_api)
+
+        # TODO: Handle requests exceptions
         except requests.exceptions.HTTPError:
             pass
 

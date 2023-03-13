@@ -1,7 +1,12 @@
+from functools import partial
+
+import requests
 from textual.app import ComposeResult
 from textual.containers import Container
 from textual.screen import Screen
 from textual.widgets import Footer, Input, Label, Markdown
+
+from weather_uk import ensure
 
 
 class WelcomeScreen(Screen):
@@ -10,6 +15,7 @@ class WelcomeScreen(Screen):
             Markdown(WELCOME_MD),
             Label("Enter your API key:"),
             Input(placeholder="Met Office DataPoint API key"),
+            Label(" ", id="auth-status"),
             Markdown(DISCLAIMER_MD),
         )
         yield Footer()
@@ -18,10 +24,31 @@ class WelcomeScreen(Screen):
         self.query_one(Input).focus()
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
-        api_key: str = event.input.value.strip()
-        self.app._api_key = api_key  # type: ignore[attr-defined]
-        self.app.push_screen("locations")
+        api_key = event.input.value.strip()
+        weather_api = self.app._weather_api  # type: ignore[attr-defined]
+        weather_api.api_key = api_key
 
+        auth_msg = self.query_one("#auth-status", Label)
+        try:
+            ensure.valid_authentication(weather_api)
+        except requests.exceptions.HTTPError as http_err:
+            status_code = http_err.response.status_code
+            if status_code == 403:
+                auth_msg.styles.color = ERROR_COLOUR
+                auth_msg.update(INVALID_KEY_MSG)
+
+        # TODO: Handle other requests exceptions
+        else:
+            auth_msg.styles.color = SUCCESS_COLOUR
+            auth_msg.update(SUCCESS_MSG)
+            auth_msg.call_after_refresh(partial(self.app.push_screen, "locations"))
+
+
+INVALID_KEY_MSG = "Error: Sorry, we couldn't validate your API key. Please try again."
+SUCCESS_MSG = "Success! Loading..."
+
+SUCCESS_COLOUR = "#4EBF71"
+ERROR_COLOUR = "#ba3c5b"
 
 DATAPOINT_URL: str = "https://www.metoffice.gov.uk/services/data/datapoint"
 
