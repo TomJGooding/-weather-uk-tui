@@ -1,27 +1,40 @@
 Screen {
-    align: center middle;
+  align: center middle;
 }
 
-Container {
-    background: $boost;
-    height: auto;
-    max-width: 100;
-    min-width: 40;
-    border: wide $primary;
-    padding: 1 2;
-    margin: 1 2;
-    box-sizing: border-box;
+Container.center-box {
+  background: $boost;
+  height: auto;
+  max-width: 100;
+  min-width: 40;
+  border: wide $primary;
+  padding: 1 2;
+  margin: 1 2;
+  box-sizing: border-box;
 }
 
 Label {
-    margin: 0 4 1 4;
-    text-style: bold;
+  margin: 0 4 1 4;
+  text-style: bold;
 }
 
 Input {
-    margin: 0 4 1 4;
+  margin: 0 4 1 4;
 }
 
 Dropdown {
-    width: 60%;
+  width: 60%;
+}
+
+Dropdown .autocomplete--right-column {
+  color: $text-disabled 0%;
+}
+
+ForecastDayView {
+  height: 1fr;
+  border: round $primary;
+}
+
+DataTable {
+  scrollbar-gutter: stable;
 }
