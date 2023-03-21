@@ -17,6 +17,7 @@ class WelcomeScreen(Screen):
             Input(placeholder="Met Office DataPoint API key"),
             Label(" ", id="auth-status"),
             Markdown(DISCLAIMER_MD),
+            classes=("center-box"),
         )
         yield Footer()
 

@@ -19,6 +19,7 @@ class LocationsScreen(Screen):
                 Input(placeholder="Search for a location"),
                 Dropdown(items=self.get_location_items()),
             ),
+            classes=("center-box"),
         )
         yield Footer()
 
@@ -32,4 +33,12 @@ class LocationsScreen(Screen):
         except requests.exceptions.HTTPError:
             pass
 
-        return [DropdownItem(str(location)) for location in locations_data]
+        return [
+            DropdownItem(main=str(location), right_meta=str(location.id))
+            for location in locations_data
+        ]
+
+    def on_auto_complete_selected(self, event: AutoComplete.Selected) -> None:
+        location_id: int = int(str(event.item.right_meta))
+        self.app._location_id = location_id  # type: ignore[attr-defined]
+        self.app.push_screen("forecast")

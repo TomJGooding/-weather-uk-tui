@@ -3,6 +3,7 @@ import dataclasses
 
 @dataclasses.dataclass
 class Location:
+    id: int
     name: str
     region: str | None
 
