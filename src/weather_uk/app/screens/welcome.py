@@ -6,7 +6,7 @@ from textual.containers import Container
 from textual.screen import Screen
 from textual.widgets import Footer, Input, Label, Markdown
 
-from weather_uk import ensure
+from weather_uk import config, ensure
 
 
 class WelcomeScreen(Screen):
@@ -40,6 +40,7 @@ class WelcomeScreen(Screen):
 
         # TODO: Handle other requests exceptions
         else:
+            self.app._user_config = config.update_config(api_key)  # type: ignore[attr-defined]
             auth_msg.styles.color = SUCCESS_COLOUR
             auth_msg.update(SUCCESS_MSG)
             auth_msg.call_after_refresh(partial(self.app.push_screen, "locations"))
