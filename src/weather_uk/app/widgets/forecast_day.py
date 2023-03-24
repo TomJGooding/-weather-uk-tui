@@ -53,7 +53,9 @@ class ForecastDayView(Container):
             wind_gust_row.append(f"{weather.wind_gust_mph}")
             visibility_row.append(weather.visibility)
             humidity_row.append(f"{weather.humidity_percent}%")
-            uv_row.append(f"{weather.max_uv_index}")
+            uv_row.append(
+                self.colour_code_uv_index(weather.max_uv_index),
+            )
 
         table_rows = [
             weather_row,
@@ -69,3 +71,17 @@ class ForecastDayView(Container):
         ]
         for row in table_rows:
             table.add_row(*row)
+
+    def colour_code_uv_index(self, uv_index: float) -> str:
+        if uv_index > 10:
+            return f"[white on purple3] {uv_index} [/white on purple3]"
+        elif uv_index > 7:
+            return f"[white on red3] {uv_index} [/white on red3]"
+        elif uv_index > 5:
+            return f"[black on dark_orange] {uv_index} [/black on dark_orange]"
+        elif uv_index > 2:
+            return f"[black on gold1] {uv_index} [/black on gold1]"
+        elif uv_index > 0:
+            return f"[black on green4] {uv_index} [/black on green4]"
+        else:
+            return f"[white on grey30] {uv_index} [/white on grey30]"
