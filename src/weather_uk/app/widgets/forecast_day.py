@@ -50,7 +50,9 @@ class ForecastDayView(Container):
             )
             temp_row.append(f"{weather.temp_celsius}°")
             feels_like_temp_row.append(f"{weather.feels_like_temp_celsius}°")
-            wind_direction_row.append(weather.wind_direction)
+            wind_direction_row.append(
+                self.add_arrows(weather.wind_direction),
+            )
             wind_speed_row.append(f"{weather.wind_speed_mph}")
             wind_gust_row.append(f"{weather.wind_gust_mph}")
             visibility_row.append(weather.visibility)
@@ -97,3 +99,23 @@ class ForecastDayView(Container):
             )
         else:
             return f"{chance_of_precip}%"
+
+    def add_arrows(self, wind_direction: str) -> str:
+        if wind_direction == "N":
+            return f"↓ {wind_direction}"
+        elif wind_direction == "E":
+            return f"← {wind_direction}"
+        elif wind_direction == "S":
+            return f"↑ {wind_direction}"
+        elif wind_direction == "W":
+            return f"→ {wind_direction}"
+        elif wind_direction[-2:] == "NE":
+            return f"↙ {wind_direction}"
+        elif wind_direction[-2:] == "NW":
+            return f"↘ {wind_direction}"
+        elif wind_direction[-2:] == "SE":
+            return f"↖ {wind_direction}"
+        elif wind_direction[-2:] == "SW":
+            return f"↗ {wind_direction}"
+        else:
+            return wind_direction
