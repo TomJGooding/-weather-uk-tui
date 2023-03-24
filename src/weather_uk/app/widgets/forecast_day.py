@@ -45,7 +45,9 @@ class ForecastDayView(Container):
 
             weather: Weather = hour.weather
             weather_row.append(str(weather.weather_type))
-            precip_chance_row.append(f"{weather.precipitation_probability}%")
+            precip_chance_row.append(
+                self.colour_code_chance_of_precip(weather.precipitation_probability)
+            )
             temp_row.append(f"{weather.temp_celsius}°")
             feels_like_temp_row.append(f"{weather.feels_like_temp_celsius}°")
             wind_direction_row.append(weather.wind_direction)
@@ -85,3 +87,13 @@ class ForecastDayView(Container):
             return f"[black on green4] {uv_index} [/black on green4]"
         else:
             return f"[white on grey30] {uv_index} [/white on grey30]"
+
+    def colour_code_chance_of_precip(self, chance_of_precip: float) -> str:
+        if chance_of_precip >= 30:
+            return (
+                "[dark_blue on light_cyan1]"
+                f"{chance_of_precip}%"
+                "[/dark_blue on light_cyan1]"
+            )
+        else:
+            return f"{chance_of_precip}%"
