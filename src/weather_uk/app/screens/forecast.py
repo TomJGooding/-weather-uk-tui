@@ -1,5 +1,6 @@
 import requests
 from textual.app import ComposeResult
+from textual.containers import Horizontal
 from textual.screen import Screen
 from textual.widgets import Footer
 
@@ -10,8 +11,8 @@ from weather_uk.forecasts.models import ForecastDay
 
 class ForecastScreen(Screen):
     def compose(self) -> ComposeResult:
-        for forecast_day in self.get_forecast():
-            yield ForecastDayView(forecast_day)
+        forecast_days = (ForecastDayView(day) for day in self.get_forecast())
+        yield Horizontal(*forecast_days, classes="horizontal-scroll-container")
         yield Footer()
 
     def get_forecast(self) -> list[ForecastDay]:
