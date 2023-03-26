@@ -31,10 +31,18 @@ Dropdown .autocomplete--right-column {
 }
 
 ForecastDayView {
-  height: 1fr;
+  height: auto;
+  width: auto;
   border: round $primary;
 }
 
 DataTable {
-  scrollbar-gutter: stable;
+  height: auto;
+  width: auto;
+}
+
+Horizontal.horizontal-scroll-container {
+  height: auto;
+  width: 95%;
+  overflow-x: scroll;
 }
