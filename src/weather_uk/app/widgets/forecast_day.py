@@ -27,16 +27,16 @@ class ForecastDayView(Container):
     def on_mount(self) -> None:
         table = self.query_one(DataTable)
 
-        weather_row: list[str] = ["Weather type"]
-        precip_chance_row: list[str] = ["Chance of precip"]
-        temp_row: list[str] = ["Temperature (°C)"]
-        feels_like_temp_row: list[str] = ["Feels like temp (°C)"]
-        wind_direction_row: list[str] = ["Wind direction"]
-        wind_speed_row: list[str] = ["Wind speed (mph)"]
-        wind_gust_row: list[str] = ["Wind gust (mph)"]
-        visibility_row: list[str] = ["Visibility"]
-        humidity_row: list[str] = ["Humidity"]
-        uv_row: list[str] = ["UV"]
+        weather_row: list[str] = ["[b]Weather type[/b]"]
+        precip_chance_row: list[str] = ["[b]Chance of precip[/b]"]
+        temp_row: list[str] = ["[b]Temperature (°C)[/b]"]
+        feels_like_temp_row: list[str] = ["[b]Feels like temp (°C)[/b]"]
+        wind_direction_row: list[str] = ["[b]Wind direction[/b]"]
+        wind_speed_row: list[str] = ["[b]Wind speed (mph)[/b]"]
+        wind_gust_row: list[str] = ["[b]Wind gust (mph)[/b]"]
+        visibility_row: list[str] = ["[b]Visibility[/b]"]
+        humidity_row: list[str] = ["[b]Humidity[/b]"]
+        uv_row: list[str] = ["[b]UV[/b]"]
 
         table.add_column("")
 
