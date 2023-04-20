@@ -5,15 +5,22 @@ from textual.screen import Screen
 from textual.widgets import Footer
 
 from weather_uk.app.widgets.forecast_day import ForecastDayView
+from weather_uk.app.widgets.forecast_labels import ForecastLabels
 from weather_uk.forecasts import services
 from weather_uk.forecasts.models import ForecastDay
 
 
 class ForecastScreen(Screen):
     def compose(self) -> ComposeResult:
-        forecast_days = (ForecastDayView(day) for day in self.get_forecast())
-        yield HorizontalScroll(*forecast_days, classes="horizontal-scroll-container")
+        with Horizontal():
+            yield ForecastLabels()
+            with HorizontalScroll():
+                for day in self.get_forecast():
+                    yield ForecastDayView(day)
         yield Footer()
+
+    def on_mount(self) -> None:
+        self.query_one(HorizontalScroll).focus()
 
     def get_forecast(self) -> list[ForecastDay]:
         weather_api = self.app._weather_api  # type: ignore[attr-defined]
