@@ -37,7 +37,7 @@ Dropdown .autocomplete--right-column {
 ForecastDayView {
   height: auto;
   width: auto;
-  border: round $primary;
+  border: vkey $primary;
 }
 
 DataTable {
@@ -45,7 +45,18 @@ DataTable {
   width: auto;
 }
 
-ForecastScreen > HorizontalScroll {
-  height: auto;
+ForecastScreen > Horizontal {
+  background: $boost;
+  height: 16;
   width: 95%;
+}
+
+ForecastScreen > Horizontal > HorizontalScroll {
+  width: 1fr;
+}
+
+ForecastLabels {
+  height: auto;
+  width: auto;
+  border: vkey $primary;
 }
