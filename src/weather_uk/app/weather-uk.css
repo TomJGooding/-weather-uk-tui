@@ -45,6 +45,10 @@ DataTable {
   width: auto;
 }
 
+ForecastScreen > Tabs {
+  width: 95%;
+}
+
 ForecastScreen > Horizontal {
   background: $boost;
   height: 16;
