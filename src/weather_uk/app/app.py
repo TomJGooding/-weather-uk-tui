@@ -16,7 +16,7 @@ class WeatherUkApp(App):
         "forecast": ForecastScreen(),
     }
     BINDINGS = [
-        ("ctrl+c", "quit", "Quit"),
+        ("q", "quit", "Quit"),
     ]
 
     def on_mount(self) -> None:
