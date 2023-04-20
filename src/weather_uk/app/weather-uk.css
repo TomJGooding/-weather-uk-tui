@@ -22,6 +22,10 @@ Input {
   margin: 0 4 1 4;
 }
 
+LocationSearch {
+  height: 5;
+}
+
 Dropdown {
   width: 60%;
 }
@@ -41,8 +45,7 @@ DataTable {
   width: auto;
 }
 
-Horizontal.horizontal-scroll-container {
+ForecastScreen > HorizontalScroll {
   height: auto;
   width: 95%;
-  overflow-x: scroll;
 }
