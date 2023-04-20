@@ -7,14 +7,14 @@ from weather_uk.locations import services
 
 
 class LocationSearch(Static):
-    def on_mount(self) -> None:
-        self.query_one(Input).focus()
-
     def compose(self) -> ComposeResult:
         yield AutoComplete(
             Input(placeholder="Search for a location"),
             Dropdown(items=self.get_location_items()),
         )
+
+    def on_mount(self) -> None:
+        self.query_one(Input).focus()
 
     def get_location_items(self) -> list[DropdownItem]:
         weather_api = self.app._weather_api  # type: ignore[attr-defined]

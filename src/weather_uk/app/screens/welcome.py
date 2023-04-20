@@ -1,5 +1,3 @@
-from functools import partial
-
 import requests
 from textual.app import ComposeResult
 from textual.containers import Container
@@ -11,14 +9,12 @@ from weather_uk import config, ensure
 
 class WelcomeScreen(Screen):
     def compose(self) -> ComposeResult:
-        yield Container(
-            Markdown(WELCOME_MD),
-            Label("Enter your API key:"),
-            Input(placeholder="Met Office DataPoint API key"),
-            Label(" ", id="auth-status"),
-            Markdown(DISCLAIMER_MD),
-            classes=("center-box"),
-        )
+        with Container(classes="center-box"):
+            yield Markdown(WELCOME_MD)
+            yield Label("Enter your API key:")
+            yield Input(placeholder="Met Office DataPoint API key")
+            yield Label(" ", id="auth-status")
+            yield Markdown(DISCLAIMER_MD)
         yield Footer()
 
     def on_mount(self) -> None:
@@ -43,7 +39,7 @@ class WelcomeScreen(Screen):
             self.app._user_config = config.update_config(api_key)  # type: ignore[attr-defined]
             auth_msg.styles.color = SUCCESS_COLOUR
             auth_msg.update(SUCCESS_MSG)
-            auth_msg.call_after_refresh(partial(self.app.push_screen, "locations"))
+            auth_msg.call_after_refresh(self.app.push_screen, "locations")
 
 
 INVALID_KEY_MSG = "Error: Sorry, we couldn't validate your API key. Please try again."
@@ -71,9 +67,11 @@ WELCOME_MD: str = f"""
 
 # Welcome to weather-uk!
 
-**weather-uk** is a terminal-based app to check UK weather forecasts, using Met Office data from their freely available [DataPoint API]({DATAPOINT_URL}).
+**weather-uk** is a terminal-based app to check UK weather forecasts,
+using Met Office data from their freely available [DataPoint API]({DATAPOINT_URL}).
 
-To use this app, you will need to [register with the Met Office]({REGISTER_URL}) to obtain an API key.
+To use this app, you will need to [register with the Met Office]({REGISTER_URL})
+to obtain an API key.
 
 """
 
@@ -81,6 +79,8 @@ DISCLAIMER_MD: str = f"""
 
 ---
 
-*weather-uk has no association with the Met Office. By using this app you must still comply with the Met Office's DataPoint [Terms and conditions]({TERMS_URL}) and [Fair Use Policy]({FAIR_USE_URL}).*
+*weather-uk has no association with the Met Office. By using this app you must
+still comply with the Met Office's DataPoint
+[Terms and conditions]({TERMS_URL}) and [Fair Use Policy]({FAIR_USE_URL}).*
 
 """
