@@ -31,6 +31,6 @@ class WeatherUkApp(App):
             self.push_screen("locations")
 
 
-if __name__ == "__main__":
+def run() -> None:
     app = WeatherUkApp()
     app.run()
