@@ -2,9 +2,6 @@
 
 Check UK weather forecasts from your terminal.
 
-> **Warning**
-> This project is currently a work in progress
-
 ## About
 
 weather-uk is a terminal-based app to check UK weather forecasts, using
@@ -23,6 +20,14 @@ and [Fair Use Policy](https://www.metoffice.gov.uk/about-us/legal/fair-usage).)_
 ### Built With
 
 - [Textual](https://github.com/Textualize/textual)
+
+## Installation
+
+Install `weather-uk` using [pipx](https://pypa.github.io/pipx/):
+
+```
+pipx install git+https://github.com/TomJGooding/weather-uk.git
+```
 
 ## Licence
 
