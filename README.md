@@ -2,6 +2,8 @@
 
 Check UK weather forecasts from your terminal.
 
+![screenshot](assets/screenshot.svg)
+
 ## About
 
 weather-uk is a terminal-based app to check UK weather forecasts, using
