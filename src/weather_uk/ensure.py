@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from weather_uk import config
-from weather_uk.ports.weather_api import AbstractWeatherApi
+from weather_uk.domain.weather_api_client import AbstractWeatherAPIClient
 
 
 def config_file_exists(filepath: Path) -> None:
@@ -10,5 +10,5 @@ def config_file_exists(filepath: Path) -> None:
         config.update_config(api_key="", filepath=filepath)
 
 
-def valid_authentication(api: AbstractWeatherApi) -> None:
-    return api.check_authentication()
+def valid_authentication(api_client: AbstractWeatherAPIClient) -> None:
+    return api_client.check_authentication()

@@ -1,10 +1,10 @@
 import json
+from abc import ABC, abstractmethod
 from typing import Optional
 
 import requests
 
 from weather_uk.data import models
-from weather_uk.ports.weather_api import AbstractWeatherApi
 from weather_uk.serialisers import (
     NumbersStoredAsTextDecoder,
     decode_met_office_forecast,
@@ -12,7 +12,21 @@ from weather_uk.serialisers import (
 )
 
 
-class MetOfficeApi(AbstractWeatherApi):
+class AbstractWeatherAPIClient(ABC):
+    @abstractmethod
+    def check_authentication(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_locations_list(self) -> list[models.Location]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_forecast(self, location_id: int) -> list[models.ForecastDay]:
+        raise NotImplementedError
+
+
+class MetOfficeAPIClient(AbstractWeatherAPIClient):
     BASE_URL: str = "http://datapoint.metoffice.gov.uk/public/data/"
     DATATYPE: str = "json"
 

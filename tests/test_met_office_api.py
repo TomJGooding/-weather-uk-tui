@@ -6,7 +6,7 @@ from typing import Optional
 import requests
 
 from weather_uk.data import models
-from weather_uk.ports.weather_api import AbstractWeatherApi
+from weather_uk.domain.weather_api_client import AbstractWeatherAPIClient
 from weather_uk.serialisers import (
     NumbersStoredAsTextDecoder,
     decode_met_office_forecast,
@@ -16,7 +16,7 @@ from weather_uk.serialisers import (
 FAKE_DATA_DIR = Path(__file__).parent / "data"
 
 
-class FakeMetOfficeApi(AbstractWeatherApi):
+class FakeMetOfficeAPIClient(AbstractWeatherAPIClient):
     BASE_URL: str = "http://datapoint.metoffice.gov.uk/public/data/"
     DATATYPE: str = "json"
 
@@ -54,7 +54,7 @@ class FakeMetOfficeApi(AbstractWeatherApi):
 
 def test_build_request_without_query() -> None:
     api_key: str = "01234567-89ab-cdef-0123-456789abcdef"
-    api = FakeMetOfficeApi(api_key)
+    api = FakeMetOfficeAPIClient(api_key)
     resource: str = "val/wxfcs/all/json/sitelist"
 
     assert api._build_request(resource).method == "GET"
@@ -66,7 +66,7 @@ def test_build_request_without_query() -> None:
 
 def test_build_request_with_query() -> None:
     api_key: str = "01234567-89ab-cdef-0123-456789abcdef"
-    api = FakeMetOfficeApi(api_key)
+    api = FakeMetOfficeAPIClient(api_key)
     resource: str = "val/wxfcs/all/json/310069"
     query: str = "res=3hourly&"
 
@@ -78,7 +78,7 @@ def test_build_request_with_query() -> None:
 
 def test_get_locations_list() -> None:
     api_key: str = "01234567-89ab-cdef-0123-456789abcdef"
-    api = FakeMetOfficeApi(api_key)
+    api = FakeMetOfficeAPIClient(api_key)
 
     expected: list[models.Location] = [
         models.Location(14, "Carlisle Airport", "Cumbria"),
@@ -100,7 +100,7 @@ def test_get_locations_list() -> None:
 
 def test_get_forecast() -> None:
     api_key: str = "01234567-89ab-cdef-0123-456789abcdef"
-    api = FakeMetOfficeApi(api_key)
+    api = FakeMetOfficeAPIClient(api_key)
 
     actual: list[models.ForecastDay] = api.get_forecast(location_id=310069)
 
