@@ -11,13 +11,14 @@ from weather_uk.ports.weather_api import AbstractWeatherApi
 class WeatherUkApp(App):
     CSS_PATH = "weather-uk.css"
     SCREENS = {
-        "welcome": WelcomeScreen(),
-        "locations": LocationsScreen(),
-        "forecast": ForecastScreen(),
+        "welcome": WelcomeScreen,
+        "locations": LocationsScreen,
+        "forecast": ForecastScreen,
     }
     BINDINGS = [
         ("q", "quit", "Quit"),
     ]
+    ENABLE_COMMAND_PALETTE = False
 
     def on_mount(self) -> None:
         self._user_config: config.UserConfig = config.load_config()
