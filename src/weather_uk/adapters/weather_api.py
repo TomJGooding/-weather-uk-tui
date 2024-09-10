@@ -3,8 +3,7 @@ from typing import Optional
 
 import requests
 
-from weather_uk.forecasts.models import ForecastDay
-from weather_uk.locations.model import Location
+from weather_uk.data import models
 from weather_uk.ports.weather_api import AbstractWeatherApi
 from weather_uk.serialisers import (
     NumbersStoredAsTextDecoder,
@@ -26,14 +25,14 @@ class MetOfficeApi(AbstractWeatherApi):
         resource: str = "txt/wxfcs/regionalforecast/json/capabilities"
         self._request(resource)
 
-    def get_locations_list(self) -> list[Location]:
+    def get_locations_list(self) -> list[models.Location]:
         resource: str = f"val/wxfcs/all/{self.DATATYPE}/sitelist"
         resp: requests.Response = self._request(resource)
         json_data: dict = json.loads(resp.text, cls=NumbersStoredAsTextDecoder)
 
         return decode_met_office_locations(json_data)
 
-    def get_forecast(self, location_id: int) -> list[ForecastDay]:
+    def get_forecast(self, location_id: int) -> list[models.ForecastDay]:
         resource: str = f"val/wxfcs/all/{self.DATATYPE}/{location_id}"
         query: str = "res=3hourly&"
         resp: requests.Response = self._request(resource, query)

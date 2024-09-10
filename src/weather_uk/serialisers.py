@@ -2,9 +2,7 @@ import datetime
 import json
 from typing import Any
 
-from weather_uk.forecasts.models import ForecastDay, ForecastHour
-from weather_uk.locations.model import Location
-from weather_uk.weather.model import Weather, WeatherType
+from weather_uk.data import models
 
 
 class NumbersStoredAsTextDecoder(json.JSONDecoder):
@@ -29,40 +27,40 @@ class NumbersStoredAsTextDecoder(json.JSONDecoder):
             return o
 
 
-def decode_met_office_locations(json_data: dict) -> list[Location]:
-    locations: list[Location] = []
+def decode_met_office_locations(json_data: dict) -> list[models.Location]:
+    locations: list[models.Location] = []
     locations_data: list[dict] = json_data["Locations"]["Location"]
     for location in locations_data:
         id: int = location["id"]
         name: str = location["name"]
         region: str | None = location.get("unitaryAuthArea")
 
-        locations.append(Location(id, name, region))
+        locations.append(models.Location(id, name, region))
 
     return locations
 
 
-def decode_met_office_forecast(json_data: dict) -> list[ForecastDay]:
-    forecast: list[ForecastDay] = []
+def decode_met_office_forecast(json_data: dict) -> list[models.ForecastDay]:
+    forecast: list[models.ForecastDay] = []
     forecast_data: dict = json_data["SiteRep"]["DV"]
     for day in forecast_data["Location"]["Period"]:
         # requires slice as datetime doesn't parse the "Z" from ISO 8601
         date = datetime.date.fromisoformat(day["value"][:-1])
-        forecast_day = ForecastDay(date=date, hours=[])
+        forecast_day = models.ForecastDay(date=date, hours=[])
         for period in day["Rep"]:
-            weather: Weather = decode_met_office_weather(period)
+            weather: models.Weather = decode_met_office_weather(period)
             minutes_after_midnight: int = period["$"]
             hour = datetime.time(minutes_after_midnight // 60)
-            forecast_day.hours.append(ForecastHour(hour, weather))
+            forecast_day.hours.append(models.ForecastHour(hour, weather))
 
         forecast.append(forecast_day)
 
     return forecast
 
 
-def decode_met_office_weather(json_data: dict) -> Weather:
-    return Weather(
-        weather_type=WeatherType(json_data["W"]),
+def decode_met_office_weather(json_data: dict) -> models.Weather:
+    return models.Weather(
+        weather_type=models.WeatherType(json_data["W"]),
         precipitation_probability=json_data["Pp"],
         temp_celsius=json_data["T"],
         feels_like_temp_celsius=json_data["F"],

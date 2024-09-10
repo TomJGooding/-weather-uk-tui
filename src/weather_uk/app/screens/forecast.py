@@ -1,14 +1,13 @@
 import requests
-from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import Horizontal, HorizontalScroll
 from textual.screen import Screen
-from textual.widgets import Footer, Tab, Tabs
+from textual.widgets import Footer, Tabs
 
 from weather_uk.app.widgets.forecast_day import ForecastDayView
 from weather_uk.app.widgets.forecast_labels import ForecastLabels
+from weather_uk.data import models
 from weather_uk.forecasts import services
-from weather_uk.forecasts.models import ForecastDay
 
 
 class ForecastScreen(Screen):
@@ -31,10 +30,10 @@ class ForecastScreen(Screen):
     def on_mount(self) -> None:
         self.query_one(Tabs).focus()
 
-    def get_forecast(self) -> list[ForecastDay]:
+    def get_forecast(self) -> list[models.ForecastDay]:
         weather_api = self.app._weather_api  # type: ignore[attr-defined]
         location_id = self.app._location_id  # type: ignore[attr-defined]
-        forecast: list[ForecastDay] = []
+        forecast: list[models.ForecastDay] = []
         try:
             forecast = services.get_forecast(weather_api, location_id)
         # TODO: Handle requests exceptions

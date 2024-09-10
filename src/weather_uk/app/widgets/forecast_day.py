@@ -5,20 +5,19 @@ from textual.app import ComposeResult
 from textual.containers import Container
 from textual.widgets import DataTable, Label
 
-from weather_uk.forecasts.models import ForecastDay, ForecastHour
-from weather_uk.weather.model import Weather
+from weather_uk.data import models
 
 
 class ForecastDayView(Container):
     def __init__(
         self,
-        forecast_day: ForecastDay,
+        forecast_day: models.ForecastDay,
         *args: Any,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.date: datetime.date = forecast_day.date
-        self.forecast_hours: list[ForecastHour] = forecast_day.hours
+        self.forecast_hours: list[models.ForecastHour] = forecast_day.hours
 
     def compose(self) -> ComposeResult:
         yield Label(self.date.strftime("%A"))
@@ -41,7 +40,7 @@ class ForecastDayView(Container):
         for hour in self.forecast_hours:
             table.add_column(hour.time.strftime("%H:%M"))
 
-            weather: Weather = hour.weather
+            weather: models.Weather = hour.weather
             weather_row.append(str(weather.weather_type))
             precip_chance_row.append(
                 self.colour_code_chance_of_precip(weather.precipitation_probability)

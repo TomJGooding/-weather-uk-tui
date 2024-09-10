@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 
-from weather_uk.forecasts.models import ForecastDay
-from weather_uk.locations.model import Location
+from weather_uk.data import models
 
 
 class AbstractWeatherApi(ABC):
@@ -10,9 +9,9 @@ class AbstractWeatherApi(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_locations_list(self) -> list[Location]:
+    def get_locations_list(self) -> list[models.Location]:
         raise NotImplementedError
 
     @abstractmethod
-    def get_forecast(self, location_id: int) -> list[ForecastDay]:
+    def get_forecast(self, location_id: int) -> list[models.ForecastDay]:
         raise NotImplementedError
