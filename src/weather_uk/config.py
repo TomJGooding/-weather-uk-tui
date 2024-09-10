@@ -4,8 +4,6 @@ from pathlib import Path
 
 import platformdirs
 
-from weather_uk import ensure
-
 APPNAME = "weather-uk"
 USER_CONFIG_PATH = platformdirs.user_config_path(APPNAME)
 CONFIG_FILEPATH = Path(USER_CONFIG_PATH / "weather-uk.cfg")
@@ -16,8 +14,14 @@ class UserConfig:
     api_key: str
 
 
+def ensure_config_file_exists(filepath: Path) -> None:
+    if not filepath.is_file():
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+        update_config(api_key="", filepath=filepath)
+
+
 def load_config(filepath: Path = CONFIG_FILEPATH) -> UserConfig:
-    ensure.config_file_exists(filepath)
+    ensure_config_file_exists(filepath)
 
     config = configparser.ConfigParser()
     config.read(filepath)

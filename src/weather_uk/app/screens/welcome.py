@@ -4,7 +4,7 @@ from textual.containers import Container
 from textual.screen import Screen
 from textual.widgets import Footer, Input, Label, Markdown
 
-from weather_uk import config, ensure
+from weather_uk.domain.authentication import check_valid_authentication
 
 
 class WelcomeScreen(Screen):
@@ -27,7 +27,7 @@ class WelcomeScreen(Screen):
 
         auth_msg = self.query_one("#auth-status", Label)
         try:
-            ensure.valid_authentication(weather_api)
+            check_valid_authentication(weather_api)
         except requests.exceptions.HTTPError as http_err:
             status_code = http_err.response.status_code
             if status_code == 403:
