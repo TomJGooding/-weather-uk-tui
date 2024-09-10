@@ -63,4 +63,5 @@ ForecastLabels {
   height: auto;
   width: auto;
   border: vkey $primary;
+  text-style: bold;
 }
