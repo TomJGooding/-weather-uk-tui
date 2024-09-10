@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 from dataclasses import dataclass
 
-from weather_uk.weather.model import Weather
+from weather_uk.data import models
 
 
 @dataclass(order=True)
@@ -15,4 +15,4 @@ class ForecastDay:
 @dataclass()
 class ForecastHour:
     time: datetime.time
-    weather: Weather
+    weather: models.Weather

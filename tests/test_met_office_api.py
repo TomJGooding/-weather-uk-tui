@@ -5,20 +5,14 @@ from typing import Optional
 
 import requests
 
-from weather_uk.forecasts.models import ForecastDay, ForecastHour
-from weather_uk.locations.model import Location
-from weather_uk.ports.weather_api import AbstractWeatherApi
-from weather_uk.serialisers import (
-    NumbersStoredAsTextDecoder,
-    decode_met_office_forecast,
-    decode_met_office_locations,
-)
-from weather_uk.weather.model import Weather, WeatherType
+from weather_uk.data import models
+from weather_uk.domain import serialisers
+from weather_uk.domain.weather_api_client import AbstractWeatherAPIClient
 
 FAKE_DATA_DIR = Path(__file__).parent / "data"
 
 
-class FakeMetOfficeApi(AbstractWeatherApi):
+class FakeMetOfficeAPIClient(AbstractWeatherAPIClient):
     BASE_URL: str = "http://datapoint.metoffice.gov.uk/public/data/"
     DATATYPE: str = "json"
 
@@ -32,19 +26,22 @@ class FakeMetOfficeApi(AbstractWeatherApi):
     def check_authentication(self) -> None:
         pass
 
-    def get_locations_list(self) -> list[Location]:
+    def get_locations_list(self) -> list[models.Location]:
         resource: str = "sitelist"
         resp: str = self._fake_request(resource)
-        json_data: dict = json.loads(resp, cls=NumbersStoredAsTextDecoder)
+        json_data: dict = json.loads(
+            resp,
+            cls=serialisers.NumbersStoredAsTextDecoder,
+        )
 
-        return decode_met_office_locations(json_data)
+        return serialisers.decode_met_office_locations(json_data)
 
-    def get_forecast(self, location_id: int) -> list[ForecastDay]:
+    def get_forecast(self, location_id: int) -> list[models.ForecastDay]:
         resource: str = f"{location_id}-3hourly"
         resp: str = self._fake_request(resource)
-        json_data = json.loads(resp, cls=NumbersStoredAsTextDecoder)
+        json_data = json.loads(resp, cls=serialisers.NumbersStoredAsTextDecoder)
 
-        return decode_met_office_forecast(json_data)
+        return serialisers.decode_met_office_forecast(json_data)
 
     def _build_request(
         self, resource: str, query: Optional[str] = None
@@ -56,7 +53,7 @@ class FakeMetOfficeApi(AbstractWeatherApi):
 
 def test_build_request_without_query() -> None:
     api_key: str = "01234567-89ab-cdef-0123-456789abcdef"
-    api = FakeMetOfficeApi(api_key)
+    api = FakeMetOfficeAPIClient(api_key)
     resource: str = "val/wxfcs/all/json/sitelist"
 
     assert api._build_request(resource).method == "GET"
@@ -68,7 +65,7 @@ def test_build_request_without_query() -> None:
 
 def test_build_request_with_query() -> None:
     api_key: str = "01234567-89ab-cdef-0123-456789abcdef"
-    api = FakeMetOfficeApi(api_key)
+    api = FakeMetOfficeAPIClient(api_key)
     resource: str = "val/wxfcs/all/json/310069"
     query: str = "res=3hourly&"
 
@@ -80,42 +77,42 @@ def test_build_request_with_query() -> None:
 
 def test_get_locations_list() -> None:
     api_key: str = "01234567-89ab-cdef-0123-456789abcdef"
-    api = FakeMetOfficeApi(api_key)
+    api = FakeMetOfficeAPIClient(api_key)
 
-    expected: list[Location] = [
-        Location(14, "Carlisle Airport", "Cumbria"),
-        Location(26, "Liverpool John Lennon Airport", "Merseyside"),
-        Location(33, "Scatsta", "Shetland Islands"),
-        Location(3066, "Kinloss", "Moray"),
-        Location(3068, "Lossiemouth", "Moray"),
-        Location(3075, "Wick John O Groats Airport", "Highland"),
-        Location(3081, "Braemar", "Aberdeenshire"),
-        Location(3002, "Baltasound", "Shetland Islands"),
-        Location(3005, "Lerwick (S. Screen)", "Shetland Islands"),
-        Location(3008, "Fair Isle", "Shetland Islands"),
+    expected: list[models.Location] = [
+        models.Location(14, "Carlisle Airport", "Cumbria"),
+        models.Location(26, "Liverpool John Lennon Airport", "Merseyside"),
+        models.Location(33, "Scatsta", "Shetland Islands"),
+        models.Location(3066, "Kinloss", "Moray"),
+        models.Location(3068, "Lossiemouth", "Moray"),
+        models.Location(3075, "Wick John O Groats Airport", "Highland"),
+        models.Location(3081, "Braemar", "Aberdeenshire"),
+        models.Location(3002, "Baltasound", "Shetland Islands"),
+        models.Location(3005, "Lerwick (S. Screen)", "Shetland Islands"),
+        models.Location(3008, "Fair Isle", "Shetland Islands"),
     ]
 
-    actual: list[Location] = api.get_locations_list()
+    actual: list[models.Location] = api.get_locations_list()
 
     assert actual == expected
 
 
 def test_get_forecast() -> None:
     api_key: str = "01234567-89ab-cdef-0123-456789abcdef"
-    api = FakeMetOfficeApi(api_key)
+    api = FakeMetOfficeAPIClient(api_key)
 
-    actual: list[ForecastDay] = api.get_forecast(location_id=310069)
+    actual: list[models.ForecastDay] = api.get_forecast(location_id=310069)
 
     assert len(actual) == 5
 
     expected = [
-        ForecastDay(
+        models.ForecastDay(
             date=datetime.date(2023, 3, 13),
             hours=[
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(18, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.CLOUDY,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.CLOUDY,
                         precipitation_probability=29,
                         temp_celsius=11,
                         feels_like_temp_celsius=8,
@@ -127,10 +124,10 @@ def test_get_forecast() -> None:
                         max_uv_index=1,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(21, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.LIGHT_RAIN,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.LIGHT_RAIN,
                         precipitation_probability=45,
                         temp_celsius=10,
                         feels_like_temp_celsius=8,
@@ -144,13 +141,13 @@ def test_get_forecast() -> None:
                 ),
             ],
         ),
-        ForecastDay(
+        models.ForecastDay(
             date=datetime.date(2023, 3, 14),
             hours=[
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(0, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.CLOUDY,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.CLOUDY,
                         precipitation_probability=55,
                         temp_celsius=8,
                         feels_like_temp_celsius=4,
@@ -162,10 +159,10 @@ def test_get_forecast() -> None:
                         max_uv_index=0,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(3, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.CLOUDY,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.CLOUDY,
                         precipitation_probability=16,
                         temp_celsius=6,
                         feels_like_temp_celsius=2,
@@ -177,10 +174,10 @@ def test_get_forecast() -> None:
                         max_uv_index=0,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(6, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.LIGHT_RAIN_SHOWER_NIGHT,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.LIGHT_RAIN_SHOWER_NIGHT,
                         precipitation_probability=85,
                         temp_celsius=5,
                         feels_like_temp_celsius=1,
@@ -192,10 +189,10 @@ def test_get_forecast() -> None:
                         max_uv_index=0,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(9, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.CLOUDY,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.CLOUDY,
                         precipitation_probability=9,
                         temp_celsius=6,
                         feels_like_temp_celsius=3,
@@ -207,10 +204,10 @@ def test_get_forecast() -> None:
                         max_uv_index=1,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(12, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.SUNNY_DAY,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.SUNNY_DAY,
                         precipitation_probability=2,
                         temp_celsius=9,
                         feels_like_temp_celsius=6,
@@ -222,10 +219,10 @@ def test_get_forecast() -> None:
                         max_uv_index=3,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(15, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.SUNNY_DAY,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.SUNNY_DAY,
                         precipitation_probability=4,
                         temp_celsius=10,
                         feels_like_temp_celsius=7,
@@ -237,10 +234,10 @@ def test_get_forecast() -> None:
                         max_uv_index=2,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(18, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.SUNNY_DAY,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.SUNNY_DAY,
                         precipitation_probability=31,
                         temp_celsius=7,
                         feels_like_temp_celsius=4,
@@ -252,10 +249,10 @@ def test_get_forecast() -> None:
                         max_uv_index=1,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(21, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.LIGHT_RAIN_SHOWER_NIGHT,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.LIGHT_RAIN_SHOWER_NIGHT,
                         precipitation_probability=37,
                         temp_celsius=5,
                         feels_like_temp_celsius=3,
@@ -269,13 +266,13 @@ def test_get_forecast() -> None:
                 ),
             ],
         ),
-        ForecastDay(
+        models.ForecastDay(
             date=datetime.date(2023, 3, 15),
             hours=[
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(0, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.PARTLY_CLOUDY_NIGHT,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.PARTLY_CLOUDY_NIGHT,
                         precipitation_probability=5,
                         temp_celsius=5,
                         feels_like_temp_celsius=3,
@@ -287,10 +284,10 @@ def test_get_forecast() -> None:
                         max_uv_index=0,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(3, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.CLOUDY,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.CLOUDY,
                         precipitation_probability=3,
                         temp_celsius=3,
                         feels_like_temp_celsius=2,
@@ -302,10 +299,10 @@ def test_get_forecast() -> None:
                         max_uv_index=0,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(6, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.CLOUDY,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.CLOUDY,
                         precipitation_probability=7,
                         temp_celsius=3,
                         feels_like_temp_celsius=2,
@@ -317,10 +314,10 @@ def test_get_forecast() -> None:
                         max_uv_index=0,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(9, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.CLOUDY,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.CLOUDY,
                         precipitation_probability=50,
                         temp_celsius=6,
                         feels_like_temp_celsius=4,
@@ -332,10 +329,10 @@ def test_get_forecast() -> None:
                         max_uv_index=1,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(12, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.HEAVY_RAIN,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.HEAVY_RAIN,
                         precipitation_probability=84,
                         temp_celsius=8,
                         feels_like_temp_celsius=5,
@@ -347,10 +344,10 @@ def test_get_forecast() -> None:
                         max_uv_index=1,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(15, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.HEAVY_RAIN,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.HEAVY_RAIN,
                         precipitation_probability=84,
                         temp_celsius=8,
                         feels_like_temp_celsius=5,
@@ -362,10 +359,10 @@ def test_get_forecast() -> None:
                         max_uv_index=1,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(18, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.HEAVY_RAIN,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.HEAVY_RAIN,
                         precipitation_probability=83,
                         temp_celsius=9,
                         feels_like_temp_celsius=7,
@@ -377,10 +374,10 @@ def test_get_forecast() -> None:
                         max_uv_index=1,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(21, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.HEAVY_RAIN,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.HEAVY_RAIN,
                         precipitation_probability=83,
                         temp_celsius=10,
                         feels_like_temp_celsius=7,
@@ -394,13 +391,13 @@ def test_get_forecast() -> None:
                 ),
             ],
         ),
-        ForecastDay(
+        models.ForecastDay(
             date=datetime.date(2023, 3, 16),
             hours=[
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(0, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.LIGHT_RAIN,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.LIGHT_RAIN,
                         precipitation_probability=56,
                         temp_celsius=11,
                         feels_like_temp_celsius=8,
@@ -412,10 +409,10 @@ def test_get_forecast() -> None:
                         max_uv_index=0,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(3, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.OVERCAST,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.OVERCAST,
                         precipitation_probability=19,
                         temp_celsius=11,
                         feels_like_temp_celsius=8,
@@ -427,10 +424,10 @@ def test_get_forecast() -> None:
                         max_uv_index=0,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(6, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.LIGHT_RAIN_SHOWER_NIGHT,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.LIGHT_RAIN_SHOWER_NIGHT,
                         precipitation_probability=33,
                         temp_celsius=11,
                         feels_like_temp_celsius=8,
@@ -442,10 +439,10 @@ def test_get_forecast() -> None:
                         max_uv_index=0,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(9, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.LIGHT_RAIN,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.LIGHT_RAIN,
                         precipitation_probability=48,
                         temp_celsius=11,
                         feels_like_temp_celsius=8,
@@ -457,10 +454,10 @@ def test_get_forecast() -> None:
                         max_uv_index=1,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(12, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.HEAVY_RAIN,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.HEAVY_RAIN,
                         precipitation_probability=68,
                         temp_celsius=11,
                         feels_like_temp_celsius=8,
@@ -472,10 +469,10 @@ def test_get_forecast() -> None:
                         max_uv_index=1,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(15, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.LIGHT_RAIN,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.LIGHT_RAIN,
                         precipitation_probability=48,
                         temp_celsius=12,
                         feels_like_temp_celsius=10,
@@ -487,10 +484,10 @@ def test_get_forecast() -> None:
                         max_uv_index=1,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(18, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.OVERCAST,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.OVERCAST,
                         precipitation_probability=19,
                         temp_celsius=12,
                         feels_like_temp_celsius=9,
@@ -502,10 +499,10 @@ def test_get_forecast() -> None:
                         max_uv_index=1,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(21, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.OVERCAST,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.OVERCAST,
                         precipitation_probability=15,
                         temp_celsius=11,
                         feels_like_temp_celsius=9,
@@ -519,13 +516,13 @@ def test_get_forecast() -> None:
                 ),
             ],
         ),
-        ForecastDay(
+        models.ForecastDay(
             date=datetime.date(2023, 3, 17),
             hours=[
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(0, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.OVERCAST,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.OVERCAST,
                         precipitation_probability=13,
                         temp_celsius=11,
                         feels_like_temp_celsius=9,
@@ -537,10 +534,10 @@ def test_get_forecast() -> None:
                         max_uv_index=0,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(3, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.OVERCAST,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.OVERCAST,
                         precipitation_probability=12,
                         temp_celsius=11,
                         feels_like_temp_celsius=9,
@@ -552,10 +549,10 @@ def test_get_forecast() -> None:
                         max_uv_index=0,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(6, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.OVERCAST,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.OVERCAST,
                         precipitation_probability=14,
                         temp_celsius=11,
                         feels_like_temp_celsius=8,
@@ -567,10 +564,10 @@ def test_get_forecast() -> None:
                         max_uv_index=0,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(9, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.CLOUDY,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.CLOUDY,
                         precipitation_probability=18,
                         temp_celsius=11,
                         feels_like_temp_celsius=9,
@@ -582,10 +579,10 @@ def test_get_forecast() -> None:
                         max_uv_index=1,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(12, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.LIGHT_RAIN_SHOWER_DAY,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.LIGHT_RAIN_SHOWER_DAY,
                         precipitation_probability=39,
                         temp_celsius=13,
                         feels_like_temp_celsius=10,
@@ -597,10 +594,10 @@ def test_get_forecast() -> None:
                         max_uv_index=2,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(15, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.LIGHT_RAIN_SHOWER_DAY,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.LIGHT_RAIN_SHOWER_DAY,
                         precipitation_probability=38,
                         temp_celsius=13,
                         feels_like_temp_celsius=10,
@@ -612,10 +609,10 @@ def test_get_forecast() -> None:
                         max_uv_index=1,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(18, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.LIGHT_RAIN_SHOWER_DAY,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.LIGHT_RAIN_SHOWER_DAY,
                         precipitation_probability=36,
                         temp_celsius=11,
                         feels_like_temp_celsius=9,
@@ -627,10 +624,10 @@ def test_get_forecast() -> None:
                         max_uv_index=1,
                     ),
                 ),
-                ForecastHour(
+                models.ForecastHour(
                     time=datetime.time(21, 0),
-                    weather=Weather(
-                        weather_type=WeatherType.CLOUDY,
+                    weather=models.Weather(
+                        weather_type=models.WeatherType.CLOUDY,
                         precipitation_probability=17,
                         temp_celsius=10,
                         feels_like_temp_celsius=8,

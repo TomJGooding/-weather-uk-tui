@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.widgets import Input, Static
 from textual_autocomplete import AutoComplete, Dropdown, DropdownItem
 
-from weather_uk.locations import services
+from weather_uk.domain.locations import get_locations_list
 
 
 class LocationSearch(Static):
@@ -20,7 +20,7 @@ class LocationSearch(Static):
         weather_api = self.app._weather_api  # type: ignore[attr-defined]
         locations_data = []
         try:
-            locations_data = services.get_locations_list(weather_api)
+            locations_data = get_locations_list(weather_api)
 
         # TODO: Handle requests exceptions
         except requests.exceptions.HTTPError:

@@ -1,19 +1,28 @@
 import json
+from abc import ABC, abstractmethod
 from typing import Optional
 
 import requests
 
-from weather_uk.forecasts.models import ForecastDay
-from weather_uk.locations.model import Location
-from weather_uk.ports.weather_api import AbstractWeatherApi
-from weather_uk.serialisers import (
-    NumbersStoredAsTextDecoder,
-    decode_met_office_forecast,
-    decode_met_office_locations,
-)
+from weather_uk.data import models
+from weather_uk.domain import serialisers
 
 
-class MetOfficeApi(AbstractWeatherApi):
+class AbstractWeatherAPIClient(ABC):
+    @abstractmethod
+    def check_authentication(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_locations_list(self) -> list[models.Location]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_forecast(self, location_id: int) -> list[models.ForecastDay]:
+        raise NotImplementedError
+
+
+class MetOfficeAPIClient(AbstractWeatherAPIClient):
     BASE_URL: str = "http://datapoint.metoffice.gov.uk/public/data/"
     DATATYPE: str = "json"
 
@@ -26,20 +35,26 @@ class MetOfficeApi(AbstractWeatherApi):
         resource: str = "txt/wxfcs/regionalforecast/json/capabilities"
         self._request(resource)
 
-    def get_locations_list(self) -> list[Location]:
+    def get_locations_list(self) -> list[models.Location]:
         resource: str = f"val/wxfcs/all/{self.DATATYPE}/sitelist"
         resp: requests.Response = self._request(resource)
-        json_data: dict = json.loads(resp.text, cls=NumbersStoredAsTextDecoder)
+        json_data: dict = json.loads(
+            resp.text,
+            cls=serialisers.NumbersStoredAsTextDecoder,
+        )
 
-        return decode_met_office_locations(json_data)
+        return serialisers.decode_met_office_locations(json_data)
 
-    def get_forecast(self, location_id: int) -> list[ForecastDay]:
+    def get_forecast(self, location_id: int) -> list[models.ForecastDay]:
         resource: str = f"val/wxfcs/all/{self.DATATYPE}/{location_id}"
         query: str = "res=3hourly&"
         resp: requests.Response = self._request(resource, query)
-        json_data = json.loads(resp.text, cls=NumbersStoredAsTextDecoder)
+        json_data = json.loads(
+            resp.text,
+            cls=serialisers.NumbersStoredAsTextDecoder,
+        )
 
-        return decode_met_office_forecast(json_data)
+        return serialisers.decode_met_office_forecast(json_data)
 
     def _request(
         self,
