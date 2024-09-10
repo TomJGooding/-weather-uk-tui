@@ -5,11 +5,7 @@ from typing import Optional
 import requests
 
 from weather_uk.data import models
-from weather_uk.serialisers import (
-    NumbersStoredAsTextDecoder,
-    decode_met_office_forecast,
-    decode_met_office_locations,
-)
+from weather_uk.domain import serialisers
 
 
 class AbstractWeatherAPIClient(ABC):
@@ -42,17 +38,23 @@ class MetOfficeAPIClient(AbstractWeatherAPIClient):
     def get_locations_list(self) -> list[models.Location]:
         resource: str = f"val/wxfcs/all/{self.DATATYPE}/sitelist"
         resp: requests.Response = self._request(resource)
-        json_data: dict = json.loads(resp.text, cls=NumbersStoredAsTextDecoder)
+        json_data: dict = json.loads(
+            resp.text,
+            cls=serialisers.NumbersStoredAsTextDecoder,
+        )
 
-        return decode_met_office_locations(json_data)
+        return serialisers.decode_met_office_locations(json_data)
 
     def get_forecast(self, location_id: int) -> list[models.ForecastDay]:
         resource: str = f"val/wxfcs/all/{self.DATATYPE}/{location_id}"
         query: str = "res=3hourly&"
         resp: requests.Response = self._request(resource, query)
-        json_data = json.loads(resp.text, cls=NumbersStoredAsTextDecoder)
+        json_data = json.loads(
+            resp.text,
+            cls=serialisers.NumbersStoredAsTextDecoder,
+        )
 
-        return decode_met_office_forecast(json_data)
+        return serialisers.decode_met_office_forecast(json_data)
 
     def _request(
         self,

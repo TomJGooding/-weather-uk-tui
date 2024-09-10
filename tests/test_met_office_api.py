@@ -6,12 +6,8 @@ from typing import Optional
 import requests
 
 from weather_uk.data import models
+from weather_uk.domain import serialisers
 from weather_uk.domain.weather_api_client import AbstractWeatherAPIClient
-from weather_uk.serialisers import (
-    NumbersStoredAsTextDecoder,
-    decode_met_office_forecast,
-    decode_met_office_locations,
-)
 
 FAKE_DATA_DIR = Path(__file__).parent / "data"
 
@@ -33,16 +29,19 @@ class FakeMetOfficeAPIClient(AbstractWeatherAPIClient):
     def get_locations_list(self) -> list[models.Location]:
         resource: str = "sitelist"
         resp: str = self._fake_request(resource)
-        json_data: dict = json.loads(resp, cls=NumbersStoredAsTextDecoder)
+        json_data: dict = json.loads(
+            resp,
+            cls=serialisers.NumbersStoredAsTextDecoder,
+        )
 
-        return decode_met_office_locations(json_data)
+        return serialisers.decode_met_office_locations(json_data)
 
     def get_forecast(self, location_id: int) -> list[models.ForecastDay]:
         resource: str = f"{location_id}-3hourly"
         resp: str = self._fake_request(resource)
-        json_data = json.loads(resp, cls=NumbersStoredAsTextDecoder)
+        json_data = json.loads(resp, cls=serialisers.NumbersStoredAsTextDecoder)
 
-        return decode_met_office_forecast(json_data)
+        return serialisers.decode_met_office_forecast(json_data)
 
     def _build_request(
         self, resource: str, query: Optional[str] = None
